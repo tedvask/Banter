@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Banter
+GenericName=Google Messages client
+Comment=SMS and RCS from your phone via Google Messages
+Comment[ru]=SMS и RCS с телефона через Google Messages
+Exec=banter
+Icon=io.github.tedvask.Banter
+Terminal=false
+Categories=Network;InstantMessaging;
+Keywords=google;messages;sms;rcs;сообщения;смс;
+StartupNotify=true

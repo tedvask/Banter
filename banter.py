@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Google Messages — минимальная обёртка над messages.google.com на WebKitGTK 6."""
+"""Banter — минимальный десктоп-клиент для Google Messages (messages.google.com) на WebKitGTK 6."""
 
 import os
 import sys
@@ -11,7 +11,7 @@ gi.require_version("Gtk", "4.0")
 gi.require_version("WebKit", "6.0")
 from gi.repository import Gio, GLib, Gtk, WebKit  # noqa: E402
 
-APP_ID = "io.github.favask.GoogleMessages"
+APP_ID = "io.github.tedvask.Banter"
 URL = "https://messages.google.com/web/"
 # Лимит памяти веб-процесса, МБ. С ~1/3 лимита WebKit начинает чистить кэши, с 1/2 — агрессивно.
 MEMORY_LIMIT_MB = 1024
@@ -34,12 +34,12 @@ class App(Gtk.Application):
         Gtk.Application.do_startup(self)
         self.view = self.create_view()
         # Закрытие окна только прячет его: страница живёт в фоне и продолжает присылать уведомления.
-        self.win = Gtk.Window(application=self, title="Google Messages",
+        self.win = Gtk.Window(application=self, title="Banter",
                               default_width=1100, default_height=750, hide_on_close=True)
         # В sway рамку рисует композитор, GTK-шный заголовок не нужен.
         self.win.set_decorated("GNOME" in os.environ.get("XDG_CURRENT_DESKTOP", ""))
         self.win.set_child(self.view)
-        self.view.connect("notify::title", lambda v, _: self.win.set_title(v.get_title() or "Google Messages"))
+        self.view.connect("notify::title", lambda v, _: self.win.set_title(v.get_title() or "Banter"))
         self.setup_actions()
         self.view.load_uri(URL)
 
@@ -67,7 +67,7 @@ class App(Gtk.Application):
             [WebKit.SecurityOrigin.new_for_uri(URL)], []))
 
         settings = WebKit.Settings(enable_webgl=False, enable_page_cache=False,
-                                   enable_developer_extras=bool(os.environ.get("GOOGLEMESSAGES_DEBUG")))
+                                   enable_developer_extras=bool(os.environ.get("BANTER_DEBUG")))
         view = WebKit.WebView(network_session=session, web_context=context, settings=settings)
         # Страница и её service worker в одном веб-процессе вместо двух: минус ~35 МБ.
         # Только после создания WebView — конструктор этот флаг сбрасывает.
