@@ -69,6 +69,11 @@ so under sway a tray click shows a hidden window but can't switch you to another
 With an `assign` rule like the one above, switch to that workspace yourself. Tray hosts that do pass
 the token, such as KDE Plasma, bring the window to the front.
 
+Accented letters typed with dead keys or Compose (é, ė, ū, č, ą…) work without IBus or Fcitx.
+Since GTK 4.20, GTK on Wayland leaves them to an input method, so when none is running, Banter
+switches to GTK's built-in composer. To use a specific input method anyway, set `GTK_IM_MODULE`:
+`flatpak override --user --env=GTK_IM_MODULE=ibus io.github.tedvask.Banter`.
+
 ## Development
 
 - Run from source without building: `python3 banter.py`. Your system needs GTK 4, WebKitGTK 6.0

@@ -23,6 +23,9 @@ URL = "https://messages.google.com/web/"
 MEMORY_LIMIT_MB = 1024
 # Icons for running from source; the flatpak installs them into the icon theme instead.
 ICON_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+# D-Bus names of input methods that handle dead keys and Compose themselves (portal or direct).
+INPUT_METHODS = {"org.freedesktop.portal.IBus", "org.freedesktop.IBus",
+                 "org.freedesktop.portal.Fcitx", "org.fcitx.Fcitx5"}
 
 # Counts unread, non-muted conversations and reports changes to the app. Event-driven: no polling.
 # -1 means the conversation list isn't rendered (window never shown yet, or not paired).
@@ -59,6 +62,7 @@ class App(Gtk.Application):
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
+        self.setup_input_method()
         self.view = self.create_view()
         # Closing the window only hides it: the page keeps running and sending notifications.
         self.win = Gtk.Window(application=self, title=NAME,
@@ -80,6 +84,19 @@ class App(Gtk.Application):
 
     def do_activate(self):
         self.win.present()
+
+    def setup_input_method(self):
+        # Since GTK 4.20, on Wayland, dead keys and Compose sequences (é ė ū č ą …) are left to an input
+        # method such as IBus or Fcitx; without one (e.g. plain sway) they can't be typed at all.
+        # Fall back to GTK's built-in composer unless the user chose an input method, one is running,
+        # or GNOME Shell, which drives IBus itself, is in charge.
+        if os.environ.get("GTK_IM_MODULE") or "GNOME" in os.environ.get("XDG_CURRENT_DESKTOP", ""):
+            return
+        names = self.get_dbus_connection().call_sync(
+            "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", "ListNames",
+            None, GLib.VariantType("(as)"), Gio.DBusCallFlags.NONE, -1, None)[0]
+        if not INPUT_METHODS & set(names):
+            Gtk.Settings.get_default().set_property("gtk-im-module", "gtk-im-context-simple")
 
     def create_view(self):
         data_dir = os.path.join(GLib.get_user_data_dir(), APP_ID)
